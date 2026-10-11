@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Test de compatibilité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#241230; --plum:#3a1f4a; --line:#5b3a6d;
+  --rose:#f2b3c4; --saffron:#f6c56e; --ink:#fff3ef; --soft:#cdb6d6;
+  --serif:'Fraunces',Georgia,serif; --sans:'DM Sans',system-ui,sans-serif;
+  box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;min-height:100%}
+body{
+  background:radial-gradient(120% 80% at 50% 0%,var(--plum),var(--night) 70%) fixed;
+  color:var(--ink);font-family:var(--sans);line-height:1.5;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);
+}
+main{max-width:520px;margin:0 auto;padding:28px 20px 48px}
+h1,h2{font-family:var(--serif);font-weight:600;line-height:1.15;margin:0 0 .5em}
+h1{font-size:2.1rem} h2{font-size:1.5rem}
+p{margin:0 0 1em;color:var(--soft)}
+[hidden]{display:none!important}
+input{
+  width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid var(--line);
+  background:rgba(255,255,255,.05);color:var(--ink);font:inherit;font-size:1rem;margin-bottom:12px;
+}
+input:focus,button:focus-visible{outline:2px solid var(--saffron);outline-offset:2px}
+input::placeholder{color:#9a82a6}
+button{font:inherit;cursor:pointer;border-radius:12px;border:1.5px solid var(--line);color:var(--ink);background:transparent;padding:14px 16px;width:100%}
+.primary{background:var(--rose);border-color:var(--rose);color:var(--night);font-weight:500}
+.primary:hover{background:#f7c6d3}
+.or{text-align:center;color:var(--soft);margin:18px 0}
+#top{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.9rem;color:var(--soft);margin-bottom:28px}
+#codeShow{font-family:var(--serif);font-size:1.15rem;color:var(--saffron);letter-spacing:.12em;background:none;border:0;padding:0;width:auto;cursor:pointer}
+#err{background:rgba(255,120,120,.12);border:1px solid #d96b78;color:#ffd5d9;padding:12px 14px;border-radius:12px;margin-bottom:16px}
+.track{height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0 28px}
+#bar{height:100%;width:0;background:var(--saffron);transition:width .35s}
+.theme{color:var(--rose);font-size:.95rem;margin-bottom:6px}
+#qtext{font-size:1.45rem;margin-bottom:24px}
+.opt{display:block;text-align:left;margin-bottom:10px}
+.opt:hover{border-color:var(--rose)}
+.opt.sel{background:var(--rose);color:var(--night);border-color:var(--rose)}
+.venn{display:block;width:100%;max-width:340px;margin:0 auto}
+.venn circle{mix-blend-mode:screen;transition:transform 1.8s cubic-bezier(.2,.8,.2,1)}
+#score{font-family:var(--serif);font-size:3.4rem;text-align:center;margin:0;color:var(--ink)}
+#msg{text-align:center;font-size:1.05rem;margin-bottom:28px}
+.row{margin-bottom:14px}
+.row .l{display:flex;justify-content:space-between;font-size:.95rem;margin-bottom:4px}
+.row .t{height:8px;background:var(--line);border-radius:8px;overflow:hidden}
+.row .f{height:100%;background:var(--rose);border-radius:8px}
+.diff{border-left:3px solid var(--saffron);padding:4px 0 4px 14px;margin-bottom:18px}
+.diff b{font-weight:500;color:var(--ink);display:block;margin-bottom:4px}
+.diff span{display:block;font-size:.92rem;color:var(--soft)}
+.link{background:none;border:0;text-decoration:underline;color:var(--soft);margin-top:24px}
+@media (prefers-reduced-motion:reduce){.venn circle,#bar{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <div id="err" role="alert" hidden></div>
+  <div id="top" hidden>
+    <span id="status">En attente de ton/ta partenaire…</span>
+    <button id="codeShow" title="Copier le code" aria-label="Copier le code de session"></button>
+  </div>
+
+  <section id="home" class="screen" hidden>
+    <h1>Êtes-vous compatibles ?</h1>
+    <p>Chacun répond de son côté, sans voir les réponses de l'autre. À la fin, vous découvrez votre taux de compatibilité.</p>
+    <input id="name" placeholder="Ton prénom" maxlength="40" autocomplete="given-name">
+    <button class="primary" id="btnCreate">Créer une session</button>
+    <div class="or">ou rejoins ta moitié</div>
+    <input id="code" placeholder="Code de la session" maxlength="6" autocapitalize="characters" autocomplete="off">
+    <button id="btnJoin">Rejoindre la session</button>
+  </section>
+
+  <section id="quiz" class="screen" hidden>
+    <div id="qnum" style="color:var(--soft);font-size:.9rem"></div>
+    <div class="track"><div id="bar"></div></div>
+    <div class="theme" id="qtheme"></div>
+    <h2 id="qtext"></h2>
+    <button class="opt" data-v="1">Pas du tout d'accord</button>
+    <button class="opt" data-v="2">Plutôt pas d'accord</button>
+    <button class="opt" data-v="3">Neutre</button>
+    <button class="opt" data-v="4">Plutôt d'accord</button>
+    <button class="opt" data-v="5">Tout à fait d'accord</button>
+  </section>
+
+  <section id="wait" class="screen" hidden>
+    <h2>Tes réponses sont enregistrées</h2>
+    <p id="waitTxt">Le résultat s'affichera dès que vous aurez terminé tous les deux. Garde cette page ouverte.</p>
+  </section>
+
+  <section id="result" class="screen" hidden>
+    <svg class="venn" viewBox="0 0 300 200" role="img" aria-label="Deux cercles qui se rapprochent selon votre compatibilité">
+      <g transform="translate(150 100)">
+        <circle id="cA" r="70" fill="#f2b3c4" fill-opacity=".75"/>
+        <circle id="cB" r="70" fill="#f6c56e" fill-opacity=".75"/>
+      </g>
+    </svg>
+    <p id="score"></p>
+    <p id="msg"></p>
+    <h2>Par thème</h2>
+    <div id="themes" style="margin-bottom:28px"></div>
+    <h2>À discuter ensemble</h2>
+    <div id="diffs"></div>
+    <button class="link" id="btnNew">Faire un nouveau test</button>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ---- À REMPLIR : Supabase > Settings > API ----
+const SUPABASE_URL = "https://obneuxppzbdexjghjaco.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Hqwl_FEVJOiAg-ycHvYNBg_zJ5orDLR";
+// -----------------------------------------------
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const S = {sid:null, code:'', me:null, questions:[], answers:{}, idx:0, other:null, result:null, shown:false, busy:false, timer:null};
+let sb;
+
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+function show(id){ document.querySelectorAll('.screen').forEach(e => e.hidden = e.id !== id); }
+function err(m){ const e = $('err'); e.textContent = m || ''; e.hidden = !m; }
+function friendly(e){
+  const m = (e && e.message) || '';
+  if (m.includes('session_not_found')) return "Code introuvable. Vérifie-le et réessaie.";
+  if (m.includes('session_full')) return "Cette session a déjà deux personnes.";
+  if (m.includes('incomplete')) return "Il reste des questions sans réponse.";
+  return "Un problème est survenu : " + m;
+}
+
+async function init(){
+  show('home');
+  if (SUPABASE_URL.startsWith('COLLE')) return err("Colle ton Project URL et ta clé anon en haut du fichier index.html.");
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let {data:{session}} = await sb.auth.getSession();
+  if (!session){
+    const r = await sb.auth.signInAnonymously();
+    if (r.error) return err("Connexion impossible. Vérifie que « Allow anonymous sign-ins » est activé dans Supabase.");
+    session = r.data.session;
+  }
+  S.me = session.user.id;
+  const saved = store.get('sid');
+  if (saved) await enter(saved);
+}
+
+async function start(mode){
+  if (S.busy || !sb) return;
+  err('');
+  const name = $('name').value.trim(), code = $('code').value.trim();
+  if (!name) return err("Entre ton prénom.");
+  if (mode === 'join' && !code) return err("Entre le code de ta session.");
+  S.busy = true;
+  try{
+    let sid;
+    if (mode === 'create'){
+      const {data, error} = await sb.rpc('create_session', {p_name:name});
+      if (error) throw error;
+      sid = data.session_id;
+    } else {
+      const {data, error} = await sb.rpc('join_session', {p_code:code, p_name:name});
+      if (error) throw error;
+      sid = data;
+    }
+    await enter(sid);
+  }catch(e){ err(friendly(e)); }
+  S.busy = false;
+}
+
+async function enter(sid){
+  S.sid = sid; store.set('sid', sid);
+  const [q, s, a] = await Promise.all([
+    sb.from('questions').select('*').order('id'),
+    sb.from('sessions').select('code').eq('id', sid).maybeSingle(),
+    sb.from('answers').select('question_id,value').eq('session_id', sid)
+  ]);
+  if (!s.data){ store.del('sid'); return show('home'); }
+  S.questions = q.data || [];
+  S.code = s.data.code;
+  S.answers = {};
+  (a.data || []).forEach(r => S.answers[r.question_id] = r.value);
+  S.idx = S.questions.findIndex(x => !(x.id in S.answers));
+  if (S.idx < 0) S.idx = S.questions.length - 1;
+  $('codeShow').textContent = S.code;
+  $('top').hidden = false;
+  S.shown = false;
+  await refresh();
+  sb.channel('p-' + sid)
+    .on('postgres_changes', {event:'*', schema:'public', table:'participants', filter:'session_id=eq.' + sid}, refresh)
+    .subscribe();
+  clearInterval(S.timer);
+  S.timer = setInterval(refresh, 4000);
+}
+
+async function refresh(){
+  if (S.result) return;
+  const {data} = await sb.from('participants').select('user_id,display_name,finished').eq('session_id', S.sid);
+  const parts = data || [];
+  const mine = parts.find(p => p.user_id === S.me);
+  const other = parts.find(p => p.user_id !== S.me);
+  S.other = other;
+  const oname = other ? (other.display_name || 'Ton/ta partenaire') : '';
+  $('status').textContent = other ? oname + ' est connecté(e)' : "En attente de ton/ta partenaire…";
+  if (!mine) return;
+  if (mine.finished){
+    if (other && other.finished){
+      const {data:r} = await sb.rpc('get_result', {p_session:S.sid});
+      if (r){ S.result = r; clearInterval(S.timer); return renderResult(); }
+    }
+    $('waitTxt').textContent = other
+      ? oname + " n'a pas encore terminé. Le résultat s'affichera automatiquement."
+      : "Ton/ta partenaire n'a pas encore rejoint. Partage-lui le code " + S.code + ".";
+    return show('wait');
+  }
+  if (!S.shown){ S.shown = true; renderQ(); }
+}
+
+function renderQ(){
+  const q = S.questions[S.idx];
+  show('quiz');
+  $('qnum').textContent = 'Question ' + (S.idx + 1) + ' sur ' + S.questions.length;
+  $('bar').style.width = (S.idx / S.questions.length * 100) + '%';
+  $('qtheme').textContent = q.theme;
+  $('qtext').textContent = q.text_fr;
+  document.querySelectorAll('.opt').forEach(b => b.classList.toggle('sel', S.answers[q.id] === +b.dataset.v));
+}
+
+async function answer(v){
+  if (S.busy) return;
+  S.busy = true; err('');
+  const q = S.questions[S.idx];
+  const {error} = await sb.rpc('save_answer', {p_session:S.sid, p_question:q.id, p_value:v});
+  if (error){ S.busy = false; return err(friendly(error)); }
+  S.answers[q.id] = v;
+  if (S.idx < S.questions.length - 1){
+    S.idx++; renderQ();
+  } else {
+    const {error:e2} = await sb.rpc('finish_test', {p_session:S.sid});
+    if (e2){ S.busy = false; return err(friendly(e2)); }
+    await refresh();
+  }
+  S.busy = false;
+}
+
+function renderResult(){
+  const r = S.result, oname = (S.other && S.other.display_name) || 'Partenaire';
+  show('result');
+  $('score').textContent = r.score + '%';
+  $('msg').textContent =
+    r.score >= 85 ? "Une belle harmonie entre vous." :
+    r.score >= 70 ? "Vous vous accordez très bien." :
+    r.score >= 50 ? "De belles bases, et des sujets à explorer ensemble." :
+    "Vous êtes différents, et c'est une occasion de mieux vous connaître.";
+  const d = (2 * 70 + 30) * (1 - r.score / 100);
+  setTimeout(() => {
+    $('cA').style.transform = 'translateX(' + (-d / 2) + 'px)';
+    $('cB').style.transform = 'translateX(' + (d / 2) + 'px)';
+  }, 150);
+  $('cA').style.transform = 'translateX(-85px)';
+  $('cB').style.transform = 'translateX(85px)';
+  $('themes').innerHTML = (r.themes || []).map(t =>
+    '<div class="row"><div class="l"><span>' + esc(t.theme) + '</span><span>' + t.score + '%</span></div>' +
+    '<div class="t"><div class="f" style="width:' + t.score + '%"></div></div></div>').join('');
+  const L = ['', "Pas du tout d'accord", "Plutôt pas d'accord", 'Neutre', "Plutôt d'accord", "Tout à fait d'accord"];
+  const diffs = (r.questions || []).filter(q => Math.abs(q.mine - q.theirs) >= 2)
+    .sort((a, b) => Math.abs(b.mine - b.theirs) - Math.abs(a.mine - a.theirs));
+  $('diffs').innerHTML = diffs.length ? diffs.map(q =>
+    '<div class="diff"><b>' + esc(q.text) + '</b><span>Toi : ' + L[q.mine] + '</span><span>' +
+    esc(oname) + ' : ' + L[q.theirs] + '</span></div>').join('')
+    : '<p>Vous avez répondu de façon très proche à presque toutes les questions.</p>';
+}
+
+$('btnCreate').onclick = () => start('create');
+$('btnJoin').onclick = () => start('join');
+$('code').oninput = e => e.target.value = e.target.value.toUpperCase();
+document.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(+b.dataset.v));
+$('codeShow').onclick = () => { try{ navigator.clipboard.writeText(S.code); $('codeShow').textContent = 'Copié'; setTimeout(() => $('codeShow').textContent = S.code, 1200); }catch(e){} };
+$('btnNew').onclick = () => { store.del('sid'); location.reload(); };
+init();
+</script>
+</body>
+</html>
